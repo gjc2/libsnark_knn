@@ -63,20 +63,20 @@ R1P_Mod_Gadget::R1P_Mod_Gadget(
 
 
 void R1P_Mod_Gadget::init(){
-    power2 = VariableArray(32, "power2_");
-    mid_result = VariableArray(32, "mid_result");
-    mid_l = VariableArray(32, "mid_l");
-    mid_r = VariableArray(32, "mid_r");
-    less = VariableArray(32, "less");
-    lessOrEqual =VariableArray(32, "lessOrEqual");
+    power2 = VariableArray(31, "power2_");
+    mid_result = VariableArray(31, "mid_result");
+    mid_l = VariableArray(31, "mid_l");
+    mid_r = VariableArray(31, "mid_r");
+    less = VariableArray(31, "less");
+    lessOrEqual =VariableArray(31, "lessOrEqual");
     sumGadget = InnerProduct_Gadget::create(
         pb_,
         lessOrEqual,
         power2,
         temp
     );
-    for(int i=32-1;i>=0;i--){
-        if(i!=31){
+    for(int i=31-1;i>=0;i--){
+        if(i!=30){
             comparisionGadget[i]=Comparison_Gadget::create(
                 pb_,
                 32,
@@ -99,7 +99,7 @@ void R1P_Mod_Gadget::init(){
 }
 
 void R1P_Mod_Gadget::generateConstraints(){
-    for(int i=0;i<32;i++){
+    for(int i=0;i<31;i++){
         pb_->addRank1Constraint(
             1<<i,
             3,
@@ -107,8 +107,8 @@ void R1P_Mod_Gadget::generateConstraints(){
             "power2[i]=3*2^i"
         );
     }
-    for(int i=32-1;i>=0;i--){
-        if(i!=31){
+    for(int i=31-1;i>=0;i--){
+        if(i!=30){
             comparisionGadget[i]->generateConstraints();
             pb_->addRank1Constraint(
                 mid_result[i+1]-power2[i],
@@ -167,26 +167,24 @@ void R1P_Mod_Gadget::generateConstraints(){
 }
 
 void R1P_Mod_Gadget::generateWitness(){
-    for(int i=0;i<32;i++){
-        val(power2[i])=val(1<<i)*val(3);
+    for(int i=0;i<31;i++){
+        val(power2[i])=val((1<<i))*val(3);
     }
-    for(int i=32-1;i>=0;i--){
-        if(i!=31){
+    for(int i=31-1;i>=0;i--){
+        if(i!=30){
             comparisionGadget[i]->generateWitness();
             val(mid_l[i])=(val(mid_result[i+1])-val(power2[i]))*val(lessOrEqual[i]);
-            val(mid_r[i])=val(mid_result[i+1])*val(1-lessOrEqual[i]);
+            val(mid_r[i])=val(mid_result[i+1])*(1-val(lessOrEqual[i]));
             val(mid_result[i])=val(mid_l[i])+val(mid_r[i]);
         }else{
             comparisionGadget[i]->generateWitness();
             val(mid_l[i])=(val(input_)-val(power2[i]))*val(lessOrEqual[i]);
-            val(mid_r[i])=val(input_)*val(1-lessOrEqual[i]);
+            val(mid_r[i])=val(input_)*(1-val(lessOrEqual[i]));
             val(mid_result[i])=val(mid_l[i])+val(mid_r[i]);
         }
     }
     sumGadget->generateWitness();
     val(output_)=val(temp)*val(mod_).inverse(fieldType());
     val(rd_)=val(mid_result[0]);
-
-
 
 }

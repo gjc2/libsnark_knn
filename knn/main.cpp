@@ -103,13 +103,8 @@ r1cs_example<libff::Fr<libff::default_ec_pp> > knn_example(){
     
 
     EXPECT_TRUE(pb->isSatisfied());
-    auto a = pb->val(7);
-    auto b = pb->val(3);
-    auto expect = a*b.inverse(FieldType());
-    auto test = b-a;
-    EXPECT_EQ(pb->val(output), expect);
-    EXPECT_EQ(pb->val(-4),test);
-    EXPECT_EQ(3,4);
+    EXPECT_EQ(pb->val(output), 2);
+    
     
     
     // translate constraint system to libsnark format.
@@ -144,10 +139,9 @@ void mod_example(){
     pb->val(p)=7;
     pb->val(q)=3;
     mod->generateWitness();
-
+    EXPECT_TRUE(pb->isSatisfied());
     EXPECT_EQ(pb->val(s),2);
     EXPECT_EQ(pb->val(r),1);
-
     
     
 }
@@ -220,11 +214,9 @@ int main(int argc, char **argv){
     // swap_example();
     // sorted_example();
     // andk_example();
-    
-
     mod_example();
-    // auto example = knn_example();
-    // run_r1cs_gg_ppzksnark<default_r1cs_gg_ppzksnark_pp>(example);
-    // run_r1cs_ppzksnark<default_r1cs_gg_ppzksnark_pp>(example);
+    auto example = knn_example();
+    run_r1cs_gg_ppzksnark<default_r1cs_gg_ppzksnark_pp>(example);
+    run_r1cs_ppzksnark<default_r1cs_gg_ppzksnark_pp>(example);
 }
 

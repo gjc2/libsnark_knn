@@ -42,10 +42,13 @@ class R1P_Knn_Gadget: public Knn_GadgetBase, public R1P_Gadget{
         VariableArray innerProduction = VariableArray(LENGTH, "dataset*query");
         VariableArray sortedInnerProduction = VariableArray(LENGTH, "sorted dataset*query");
 
+        Variable rd;
+
         
         GadgetPtr innerProductGadget[LENGTH];
         GadgetPtr andKGadget;
         GadgetPtr sortGadget;
+        GadgetPtr modGadget;
 
         std::vector<VariableArray>sub;
 
@@ -104,6 +107,13 @@ void R1P_Knn_Gadget::init(){
         sumk
     );
     
+    modGadget = Mod_Gadget::create(
+        pb_,
+        sumk,
+        k_,
+        output_,
+        rd
+    );
 }
 
 
@@ -125,12 +135,7 @@ void R1P_Knn_Gadget::generateConstraints(){
     }
     sortGadget->generateConstraints();
     andKGadget->generateConstraints();
-    pb_->addRank1Constraint(
-        output_ ,
-        k_,
-        sumk,
-        "output = sumk * inv_k"
-    );
+    modGadget->generateConstraints();
     
 }
 
@@ -145,7 +150,7 @@ void R1P_Knn_Gadget::generateWitness(){
     }
     sortGadget->generateWitness();
     andKGadget->generateWitness();
-    val(output_) = val(sumk) * val(k_).inverse(fieldType());
+    modGadget->generateWitness();
 
     EXPECT_EQ(val(dataset_[0][0]), 2);
     EXPECT_EQ(val(dataset_[0][1]), 3);
@@ -190,6 +195,8 @@ void R1P_Knn_Gadget::generateWitness(){
     EXPECT_EQ(val(sortedLabel_[3]), 3);
     EXPECT_EQ(val(sortedLabel_[4]), 5);
     EXPECT_EQ(val(sumk), 7);
+    EXPECT_EQ(val(rd),1);
+    EXPECT_EQ(val(output_),2);
 }
 
 
